@@ -55,6 +55,7 @@ const btnSort = document.querySelector('.btn--sort');
 
 const inputLoginUsername = document.querySelector('.login__input--user');
 const inputLoginPin = document.querySelector('.login__input--pin');
+
 const inputTransferTo = document.querySelector('.form__input--to');
 const inputTransferAmount = document.querySelector('.form__input--amount');
 const inputLoanAmount = document.querySelector('.form__input--loan-amount');
@@ -75,7 +76,6 @@ const displayMovements = function (movements) {
     containerMovements.insertAdjacentHTML('afterbegin', html);
   });
 };
-displayMovements(account1.movements);
 
 const createUsernames = function (accs) {
   accs.forEach(acc => {
@@ -92,9 +92,9 @@ const calcDisplayBalance = function (movements) {
   const balance = movements.reduce((acc, item) => item + acc, 0);
   labelBalance.textContent = `${balance}€`;
 };
-calcDisplayBalance(account1.movements);
 
-const calcDisplaySummary = function (movements) {
+const calcDisplaySummary = function (acc) {
+  const { movements, interestRate } = acc;
   const incomes = movements
     .filter(mov => mov > 0)
     .reduce((acc, item) => item + acc, 0);
@@ -107,14 +107,45 @@ const calcDisplaySummary = function (movements) {
 
   const interest = movements
     .filter(mov => mov > 0)
-    .map(mov => mov * (1.2 / 100))
+    .map(mov => mov * (interestRate / 100))
     .filter((int, i) => int > 1)
     .reduce((acc, int) => int + acc, 0);
 
   labelSumInterest.textContent = `${interest}€`;
 };
 
-calcDisplaySummary(account1.movements);
+// Event Handlers
+let currentAccount;
+btnLogin.addEventListener('click', function (e) {
+  e.preventDefault();
+  currentAccount = accounts.find(
+    acc => acc.username === inputLoginUsername.value
+  );
+
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    // Display UI and welcome memssage
+    containerApp.style.opacity = '100';
+    labelWelcome.textContent = `Welcome back, ${currentAccount.owner
+      .split(' ')
+      .at(0)}`;
+    // Display movements
+    displayMovements(currentAccount.movements);
+    // Display summary
+    calcDisplaySummary(currentAccount);
+    //  Display balance
+    calcDisplayBalance(currentAccount.movements);
+
+    // Clear input fields
+    inputLoginUsername.value = '';
+    inputLoginPin.value = '';
+    inputLoginPin.blur();
+  }
+});
+
+// btnLogin.addEventListener('click', function () {
+
+// });
+
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // LECTURES
@@ -128,7 +159,6 @@ const currencies = new Map([
 const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 let rate = 1.1;
 const movementsToUSD = movements.map(mov => mov * rate);
-console.log(movementsToUSD);
 
 // get all deposits in dollars
 
@@ -136,5 +166,4 @@ const ouptut = movements
   .filter(item => item > 0)
   .map(item => item * 1.1)
   .reduce((acc, item) => item + acc, 0);
-console.log(ouptut);
 /////////////////////////////////////////////////
